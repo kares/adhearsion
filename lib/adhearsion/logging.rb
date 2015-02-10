@@ -7,6 +7,16 @@ module Adhearsion
 
     LOG_LEVELS = %w(TRACE DEBUG INFO WARN ERROR FATAL)
 
+    class ::Logging::Logger
+      def self.dispose!(logger)
+        repo = ::Logging::Repository.instance
+        # NOTE: as delete might (still) CME ... until plain Hash is used
+        @mutex.synchronize do
+          repo.delete(logger.is_a?(::Logging::Logger) ? logger.name : logger)
+        end
+      end
+    end
+
     class ::Logging::Repository
       def delete( key ) @h.delete(to_key(key)) end
     end
