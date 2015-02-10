@@ -38,6 +38,10 @@ module Adhearsion
         '[%d] %-5l %c: %m\n'
       end
 
+      def adhearsion_date_pattern
+        '%Y-%m-%d %H:%M:%S.%L' # added .millis
+      end
+
       # Silence Adhearsion's logging, printing only FATAL messages
       def silence!
         self.logging_level = :fatal
@@ -88,6 +92,7 @@ module Adhearsion
            'stdout',
            :layout => ::Logging.layouts.pattern(
              :pattern => adhearsion_pattern,
+             :date_pattern => adhearsion_date_pattern,
              :color_scheme => 'bright'
            ),
            :auto_flushing => 2,
