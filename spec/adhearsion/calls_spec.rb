@@ -47,7 +47,7 @@ module Adhearsion
         before do
           @call_id = deleted_call.id
           Celluloid::Actor.kill deleted_call
-          deleted_call.should_not be_alive
+          expect( deleted_call.alive? ).to be false
           subject.remove_inactive_call deleted_call
         end
 
@@ -135,7 +135,7 @@ module Adhearsion
 
       it "shuts down the actor" do
         crash
-        call.should_not be_alive
+        expect( call.alive? ).to be false
       end
     end
   end

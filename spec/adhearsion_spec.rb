@@ -84,12 +84,12 @@ describe Adhearsion do
     it "should create a new collection if the existing one dies" do
       original = Adhearsion.active_calls
       original.terminate
-      original.should_not be_alive
+      expect( original.alive? ).to be false
 
       sleep 0.25
 
       current = Adhearsion.active_calls
-      current.should be_alive
+      expect( current.alive? ).to be true
       current.should_not be original
     end
   end
@@ -106,12 +106,12 @@ describe Adhearsion do
     it "should create a new aggregator if the existing one dies" do
       original = Adhearsion.statistics
       original.terminate
-      original.should_not be_alive
+      expect( original.alive? ).to be false
 
       sleep 0.25
 
       current = Adhearsion.statistics
-      current.should be_alive
+      expect( current.alive? ).to be true
       current.should_not be original
     end
   end

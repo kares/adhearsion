@@ -327,7 +327,7 @@ module Adhearsion
           subject.register_event_handler { |e| raise 'foo' }
           lambda { subject << :foo }.should_not raise_error
           sleep 1
-          subject.should be_alive
+          expect( subject.alive? ).to be true
         end
 
         it 'passes the exception through the Events system' do
@@ -456,8 +456,8 @@ module Adhearsion
         it "shuts down the actor" do
           Adhearsion.config.platform.after_hangup_lifetime = 2
           subject << end_event
-          sleep 2.1
-          subject.should_not be_alive
+          Celluloid::Actor.join(subject); sleep 2.1
+          expect( subject.alive? ).to be false
           lambda { subject.id }.should raise_error Call::ExpiredError, /expired and is no longer accessible/
         end
       end
@@ -959,7 +959,7 @@ module Adhearsion
         it "should call #bg_exec on the controller instance" do
           mock_controller.should_receive(:exec).once
           subject.execute_controller mock_controller, lambda { |call| latch.countdown! }
-          latch.wait(3).should be_true
+          latch.wait(3).should be true
         end
 
         it "should use the passed block as a controller if none is specified" do
@@ -968,7 +968,7 @@ module Adhearsion
           subject.execute_controller nil, lambda { |call| latch.countdown! } do
             foo
           end
-          latch.wait(3).should be_true
+          latch.wait(3).should be true
         end
 
         it "should raise ArgumentError if both a controller and a block are passed" do
@@ -990,7 +990,7 @@ module Adhearsion
         it "should execute a callback after the controller executes" do
           foo = nil
           subject.execute_controller mock_controller, lambda { |call| foo = call; latch.countdown! }
-          latch.wait(3).should be_true
+          latch.wait(3).should be true
           foo.should be subject
         end
       end
