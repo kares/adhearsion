@@ -446,9 +446,19 @@ module Adhearsion
       end
     end
 
-    def finalize
-      ::Logging::Repository.instance.delete logger_id
+    def logger
+      if id
+        @logger ||= ::Logging.logger[ logger_id ]
+      else
+        ::Logging.logger[ self.class.name ]
+      end
     end
+    public :logger
+
+    # NOTE: memoize once used so it's correctly disposed (won't leak)
+    def logger_id; @logger_id ||= "#{self.class}: #{id}@#{domain}" end
+
+    def finalize; ::Logging::Logger.dispose!(logger_id) end
 
     # @private
     class CommandRegistry < Array
