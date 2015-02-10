@@ -14,7 +14,12 @@ end
 module Celluloid
   class ActorProxy
     def logger
-      Actor.call @mailbox, :logger
+      if current_actor = Thread.current[:celluloid_actor]
+        current_actor.bare_object.send :logger
+      else
+        Actor.call @mailbox, :logger
+      end
     end
+    alias pb_logger logger
   end
 end
