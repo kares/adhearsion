@@ -11,9 +11,8 @@ module Adhearsion
     def self.load_script_ahn(path = Dir.pwd)
       path = Pathname.new(path).expand_path
       until path.root?
-        script = File.join(path, SCRIPT_AHN)
-        if File.exists?(script)
-          load script
+        if in_ahn_application?(path.to_s)
+          load File.join(path, SCRIPT_AHN)
           return true
         end
         path = path.parent
