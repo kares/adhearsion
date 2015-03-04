@@ -1,14 +1,24 @@
 language: ruby
+sudo: false
 rvm:
   - 1.9.3
   - 2.0.0
-  - jruby-19mode
-  - rbx-19mode
-  - ruby-head
+  - jruby-1.7.4
+  - jruby-1.7.16
+  #- rbx-19mode
+  #- ruby-head
+jdk:
+  - openjdk7 # for jruby
+before_script: export JRUBY_OPTS="-Xcompile.invokedynamic=false -J-Xss1200k -J-Xmx652m"
 matrix:
   allow_failures:
-    - rvm: rbx-19mode
-    - rvm: ruby-head
+    # recent JRubies 1.7.16 - 1.7.19 fail with :
+    # SystemStackError: stack level too deep
+    #  ./lib/adhearsion/call_controller.rb:133:in `run'
+    #  ./spec/adhearsion/call_controller_spec.rb:83:in `Adhearsion'
+    - rvm: jruby-1.7.16
+    #- rvm: rbx-19mode
+    #- rvm: ruby-head
 env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
 #notifications:
 #  irc: "irc.freenode.org#adhearsion"
