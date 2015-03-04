@@ -1,5 +1,7 @@
 # encoding: utf-8
 
+require 'adhearsion/script_ahn_loader'
+
 module Adhearsion
   module CLI
     class AhnCommand < Thor
@@ -98,28 +100,24 @@ module Adhearsion
       protected
 
       def start_app(path, mode, pid_file = nil)
-        execute_from_app_dir! path
-        say "Starting Adhearsion server at #{Dir.pwd}"
+        path = execute_from_app_dir! path
+        say "Starting Adhearsion server at #{path}"
         Adhearsion::Initializer.start :mode => mode, :pid_file => pid_file
       end
 
       def execute_from_app_dir!(path)
-        return if in_app? and running_script_ahn?
+        return Dir.pwd if in_app?
 
-        path ||= Dir.pwd if in_app?
+        path = nil if path && path.empty?
+        #path ||= Dir.pwd if in_app?
 
-        raise PathRequired, ARGV[0] if path.nil? or path.empty?
+        raise PathRequired, ARGV[0] if path.nil?
+        raise PathInvalid, path unless File.directory?(path)
 
-        Dir.chdir path do
-          raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?
-          args = ARGV.dup
-          args[1] = '.'
-          ScriptAhnLoader.exec_script_ahn! args
-        end
-      end
-
-      def running_script_ahn?
-        $0.to_s == "script/ahn"
+        raise PathInvalid, path unless ScriptAhnLoader.in_ahn_application?(path)
+        # load script/ahn which than boots the Rails environment :
+        Dir.chdir(path) { ScriptAhnLoader.load_script_ahn(path) }
+        path
       end
 
       def in_app?
