@@ -14,3 +14,11 @@ matrix:
 env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
 #notifications:
 #  irc: "irc.freenode.org#adhearsion"
+matrix:
+  include:
+    - jdk: oraclejdk7
+      env: AS_VERSION=4.2.5 ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+      rvm: jruby-1.7.4
+    - jdk: oraclejdk7
+      env: AS_VERSION=4.1.14 ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+      rvm: jruby-1.7.23
