@@ -18,8 +18,17 @@ if RUBY_VERSION < '2.0'
   gem 'mime-types', '< 2.99'
 end
 
-if ENV['PB_VERSION']
-  gem 'punchblock', ENV['PB_VERSION']
+if pb_version = ENV['PB_VERSION']
+  git_repo = ENV['PB_REPO'] || 'https://github.com/cloudvox/punchblock.git'
+  if pb_version.index('/') && ::File.exist?(pb_version)
+    gem 'punchblock', path: pb_version
+  elsif pb_version =~ /^((=|>|>=|<|<=|~>)\s*)?\d(\.\w+)+$/
+    gem 'punchblock', pb_version
+  elsif pb_version =~ /^[0-9abcdef]+$/
+    gem 'punchblock', git: git_repo, ref: pb_version
+  else
+    gem 'punchblock', git: git_repo, branch: pb_version
+  end
 else
-  gem 'punchblock'
+  gem 'punchblock', '~> 2.7'
 end
