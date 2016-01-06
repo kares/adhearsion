@@ -7,6 +7,7 @@ rvm:
   - jruby-1.7.23
 jdk:
   - openjdk7 # for jruby
+before_install: export PB_REPO="https://github.com/kares/punchblock.git" # temp!
 before_script:
   - export JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
   - export JRUBY_OPTS="$JRUBY_OPTS -Xcompile.invokedynamic=false" # JRuby 1.7.4
