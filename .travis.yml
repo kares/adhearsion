@@ -7,18 +7,27 @@ rvm:
   - jruby-1.7.23
 jdk:
   - openjdk7 # for jruby
-before_script: export JRUBY_OPTS="--server -Xcompile.invokedynamic=false -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
+before_script:
+  - export JRUBY_OPTS="--server -J-Xss1024k -J-Xmx652m -J-XX:+UseConcMarkSweepGC"
+  - export JRUBY_OPTS="$JRUBY_OPTS -Xcompile.invokedynamic=false" # JRuby 1.7.4
 matrix:
   allow_failures:
     #- rvm: jruby-1.7.4
-env: ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+env:
+  global:
+    - ARUBA_TIMEOUT=120
+    - RAILS_ENV=development
+    - AHN_ENV=development
+  matrix:
+    - PB_VERSION="~> 2.6.0"
+    - PB_VERSION="develop-dialogtech-2.6"
 #notifications:
 #  irc: "irc.freenode.org#adhearsion"
 matrix:
   include:
     - jdk: oraclejdk7
-      env: AS_VERSION=4.2.5 ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+      env: AS_VERSION=4.2.5 PB_VERSION="develop-dialogtech-2.6"
       rvm: jruby-1.7.4
     - jdk: oraclejdk7
-      env: AS_VERSION=4.1.14 ARUBA_TIMEOUT=120 RAILS_ENV=development AHN_ENV=development
+      env: AS_VERSION=4.1.14 PB_VERSION="develop-dialogtech-2.6"
       rvm: jruby-1.7.23
