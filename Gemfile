@@ -32,3 +32,12 @@ if pb_version = ENV['PB_VERSION']
 else
   gem 'punchblock', '~> 2.7'
 end
+
+# help Bundler as its having a hard-time resolving a working state :
+gem 'celluloid-io', '~> 0.15.0'
+
+group :development do
+  gem 'ci_reporter', '~> 2.0.0', require: false
+  gem 'ci_reporter_rspec', '~> 1.0.0', require: false
+  gem 'ci_reporter_cucumber', '~> 1.0.0', require: false
+end
