@@ -4,6 +4,7 @@ require 'has_guarded_handlers'
 require 'adhearsion/translator/asterisk/ami_error_converter'
 require 'concurrent/atomic/atomic_boolean'
 require 'concurrent/atomic/atomic_reference'
+require 'concurrent/map'
 
 module Adhearsion
   module Translator
@@ -31,7 +32,7 @@ module Adhearsion
           @channel, @translator, @ami_client, @connection = channel, translator, ami_client, connection
           @agi_env = agi_env || {}
           @id = id || Adhearsion.new_uuid
-          @components = {}
+          @components = Concurrent::Map.new
           @answered = Concurrent::AtomicBoolean.new
           @pending_joins = {}
           @progress_sent = Concurrent::AtomicBoolean.new
@@ -41,7 +42,7 @@ module Adhearsion
         end
 
         def register_component(component)
-          @components[component.id] ||= component
+          @components.put_if_absent(component.id, component)
         end
 
         def deregister_component(id)
@@ -341,7 +342,7 @@ module Adhearsion
           @block_commands.value = true
           code ||= 16
           reason = @hangup_cause.get || HANGUP_CAUSE_TO_END_REASON[code]
-          @components.values.each do |component|
+          @components.each_pair do |_, component|
             component.call_ended
           end
           send_end_event reason, code, timestamp
