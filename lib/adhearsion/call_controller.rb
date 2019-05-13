@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require 'countdownlatch'
+require 'concurrent/array'
 
 %w(
   dial
@@ -83,7 +84,7 @@ module Adhearsion
     def initialize(call, metadata = nil, &block)
       @call, @metadata, @block = call, metadata || {}, block
       @block_context = eval "self", @block.binding if @block
-      @active_components = []
+      @active_components = Concurrent::Array.new
     end
 
     def method_missing(method_name, *args, &block)
@@ -168,7 +169,7 @@ module Adhearsion
     #
     def stop_all_components
       logger.info "Stopping all controller components"
-      @active_components.each do |component|
+      @active_components.dup.each do |component|
         begin
           component.stop!
         rescue Adhearsion::Rayo::Component::InvalidActionError
