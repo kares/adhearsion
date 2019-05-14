@@ -43,6 +43,11 @@ module Adhearsion
       rescue FutureResource::ResourceAlreadySetException => e
         logger.error "#{e.class} for: #{self.inspect}"
       end
+
+      def terminate
+        @response.terminate
+      end
+
     end
   end
 end

@@ -82,18 +82,16 @@ module Adhearsion
         #
         def stop!(options = {})
           raise InvalidActionError, "Cannot stop a #{self.class.name.split("::").last} that is #{state}" unless executing?
-          begin
-            stop_action.tap { |action| write_action action }
-          ensure
-            terminate_resource
-          end
+          stop_action.tap { |action| write_action action }
+        ensure
+          terminate
         end
 
-        private
-
-        def terminate_resource
+        def terminate
           @complete_event_resource.terminate
+          super
         end
+
       end
     end
   end
