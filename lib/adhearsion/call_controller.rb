@@ -2,6 +2,7 @@
 
 require 'countdownlatch'
 require 'concurrent/array'
+require 'concurrent/atomic/atomic_reference'
 
 %w(
   dial
@@ -85,6 +86,7 @@ module Adhearsion
       @call, @metadata, @block = call, metadata || {}, block
       @block_context = eval "self", @block.binding if @block
       @active_components = Concurrent::Array.new
+      @pause_latch = Concurrent::AtomicReference.new
     end
 
     def method_missing(method_name, *args, &block)
@@ -318,19 +320,19 @@ module Adhearsion
 
     # @private
     def block_until_resumed
-      instance_variable_defined?(:@pause_latch) && @pause_latch.wait
+      (pause_latch = @pause_latch.get) && pause_latch.wait
     end
 
     # @private
     def pause!
-      @pause_latch = CountDownLatch.new 1
+      @pause_latch.set CountDownLatch.new 1
     end
 
     # @private
     def resume!
-      return unless @pause_latch
-      @pause_latch.countdown!
-      @pause_latch = nil
+      return unless pause_latch = @pause_latch.get
+      @pause_latch.set nil
+      pause_latch.countdown!
     end
 
     # @private
