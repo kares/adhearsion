@@ -214,11 +214,12 @@ module Adhearsion
       block_until_resumed
       call.write_and_await_response command
       if command.is_a?(Adhearsion::Rayo::Component::ComponentNode)
+        @active_components << command
         command.register_event_handler Adhearsion::Event::Complete do |event|
           @active_components.delete command
+          command.terminate unless call.active?
           throw :pass
         end
-        @active_components << command
       end
     end
 
