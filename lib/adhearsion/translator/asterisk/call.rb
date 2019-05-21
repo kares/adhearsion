@@ -16,7 +16,7 @@ module Adhearsion
 
         OUTBOUND_CHANNEL_MATCH = /.* <(?<channel>.*)>/.freeze
 
-        attr_reader :id, :channel, :translator, :agi_env, :direction, :pending_joins
+        attr_reader :id, :channel, :translator, :agi_env, :pending_joins
 
         HANGUP_CAUSE_TO_END_REASON = Hash.new { :error }
         HANGUP_CAUSE_TO_END_REASON[0] = :hungup
@@ -34,11 +34,16 @@ module Adhearsion
           @id = id || Adhearsion.new_uuid
           @components = Concurrent::Map.new
           @answered = Concurrent::AtomicBoolean.new
-          @pending_joins = {}
+          @pending_joins = Concurrent::Map.new
           @progress_sent = Concurrent::AtomicBoolean.new
           @block_commands = Concurrent::AtomicBoolean.new
-          @channel_variables = {}
+          @channel_variables = Concurrent::Map.new
           @hangup_cause = Concurrent::AtomicReference.new
+          @direction = Concurrent::AtomicReference.new
+        end
+
+        def direction
+          @direction.get
         end
 
         def register_component(component)
@@ -54,7 +59,7 @@ module Adhearsion
         end
 
         def send_offer
-          @direction = :inbound
+          @direction.set :inbound
           send_pb_event offer_event
         end
 
@@ -68,7 +73,7 @@ module Adhearsion
         alias :inspect :to_s
 
         def dial(dial_command)
-          @direction = :outbound
+          @direction.set :outbound
           channel = dial_command.to || ''
           channel.match(OUTBOUND_CHANNEL_MATCH) { |m| channel = m[:channel] }
           params = { :async       => true,
