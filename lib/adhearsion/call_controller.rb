@@ -214,9 +214,9 @@ module Adhearsion
     # @private
     def write_and_await_response(command)
       block_until_resumed
-      @active_components << command if command.is_a?(Adhearsion::Rayo::Component::ComponentNode)
       call.write_and_await_response command
       if command.is_a?(Adhearsion::Rayo::Component::ComponentNode)
+        @active_components << command
         command.register_event_handler Adhearsion::Event::Complete do |event|
           @active_components.delete command
           command.terminate unless call.active?
