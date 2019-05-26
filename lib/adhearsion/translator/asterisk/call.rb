@@ -40,6 +40,7 @@ module Adhearsion
           @channel_variables = Concurrent::Map.new
           @hangup_cause = Concurrent::AtomicReference.new
           @direction = Concurrent::AtomicReference.new
+          @waiters = Concurrent::Map.new
         end
 
         def direction
@@ -314,11 +315,17 @@ module Adhearsion
         def execute_agi_command(command, *params)
           agi = AGICommand.new Adhearsion.new_uuid, channel, command, *params
           response = Celluloid::Future.new
-          register_tmp_handler :ami, [{name: 'AsyncAGI', [:[], 'SubEvent'] => 'Exec'}, {name: 'AsyncAGIExec'}], [{[:[], 'CommandID'] => agi.id}, {[:[], 'CommandId'] => agi.id}] do |event|
+          handler = register_tmp_handler :ami, [{name: 'AsyncAGI', [:[], 'SubEvent'] => 'Exec'}, {name: 'AsyncAGIExec'}], [{[:[], 'CommandID'] => agi.id}, {[:[], 'CommandId'] => agi.id}] do |event|
+            @waiters.delete(response)
             response.signal Celluloid::SuccessResponse.new(nil, event)
           end
-          agi.execute @ami_client
-          event = response.value
+          @waiters[response] = handler
+          begin
+            agi.execute @ami_client
+            event = response.value
+          ensure
+            @waiters.delete(response)
+          end
           return unless event
           agi.parse_result event
         end
@@ -351,6 +358,12 @@ module Adhearsion
             component.call_ended
           end
           send_end_event reason, code, timestamp
+        ensure
+          @waiters.each do |response, handler|
+            unregister_handler(:ami, handler)
+            # NOTE: maybe this should be an ErrorResponse, fine (for now) with the nil return
+            response.signal Celluloid::SuccessResponse.new(nil, nil) if @waiters.key?(response)
+          end
         end
 
         def after(*args, &block)
