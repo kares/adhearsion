@@ -45,7 +45,7 @@ module Adhearsion
       end
 
       def terminate
-        @response.terminate
+        @response.terminate unless @response.set_yet?
       end
 
     end

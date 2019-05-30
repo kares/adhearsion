@@ -88,7 +88,7 @@ module Adhearsion
         end
 
         def terminate
-          @complete_event_resource.terminate
+          @complete_event_resource.terminate unless @complete_event_resource.set_yet?
           super
         end
 
